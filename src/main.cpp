@@ -34,13 +34,13 @@ void t_cyclic10s() // Ticker called every 10 seconds
   const double celsius = thermistor->readCelsius();
   dataBuffer.data.ntc_temp1 = celsius;
   Serial.print("Temperature: ");
-  Serial.print(celsius);
+  Serial.println(celsius);
 }
 
 void t_cyclic1m() // Ticker called every 1 minute
 {
   // Send data via MQTT
-  Serial.print("Mqtt send");
+  Serial.println("Mqtt send");
   mqtt_send();
 }
 
@@ -48,7 +48,7 @@ void setup_ticker()
 {
   // Initialize Tickers
   cyclic10s.attach(10, t_cyclic10s); // Use attach_ms if you need time in
-  cyclic1m.attach(60, t_cyclic1m);   // Use attach_ms if you need time in
+  cyclic1m.attach(10, t_cyclic1m);   // Use attach_ms if you need time in
 }
 
 // the setup function runs once when you press reset or power the board
@@ -117,7 +117,7 @@ void led_blink_long()
 void setup()
 {
   Serial.begin(115200);
-  pinMode(LED, OUTPUT); // LED pin as output.
+  i2c_scan();
   setup_wifi();
   setup_mqtt();
   setup_ntc();
@@ -126,7 +126,7 @@ void setup()
 
 #if (USE_DISPLAY)
   setup_display();
-  showPage(PAGE_BOOT);
+  showPage(PAGE_NTC);
 #endif
 }
 
@@ -138,7 +138,7 @@ void loop()
     cyclic_cnt++;
     lastMsg = now;
     led_blink_short();
-    if (cyclic_cnt > 4)
+    if (cyclic_cnt > 10)
     {
       Serial.print("going to sleep for 2 minutes");
       led_blink_long();

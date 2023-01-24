@@ -1,5 +1,6 @@
 #include "globals.h"
 #include "mqtt.h"
+#include <Wire.h>
 
 static const char TAG[] = __FILE__;
 
@@ -170,3 +171,41 @@ void mqtt_send()
 
 
 #endif
+
+#define SSD1306_PRIMARY_ADDRESS (0x3D)
+#define SSD1306_SECONDARY_ADDRESS (0x3C)
+#define PCA9685_PRIMARY_ADDRESS (0x40)
+#define BME_PRIMARY_ADDRESS (0x77)
+#define BME_SECONDARY_ADDRESS (0x76)
+#define AXP192_PRIMARY_ADDRESS (0x34)
+#define MCP_24AA02E64_PRIMARY_ADDRESS (0x50)
+#define QUECTEL_GPS_PRIMARY_ADDRESS (0x10)
+#define ADXL345 (0x53)
+#define IP5306_ADDR (0X75)
+
+
+int i2c_scan(void) {
+
+    Serial.println ();
+  Serial.println ("I2C scanner. Scanning ...");
+  byte count = 0;
+  
+  Wire.begin();
+  for (byte i = 8; i < 120; i++)
+  {
+    Wire.beginTransmission (i);
+    if (Wire.endTransmission () == 0)
+      {
+      Serial.print ("Found address: ");
+      Serial.print (i, DEC);
+      Serial.print (" (0x");
+      Serial.print (i, HEX);
+      Serial.println (")");
+      count++;
+      delay (1);  // maybe unneeded?
+      }
+  }
+  Serial.print ("Found ");
+  Serial.print (count, DEC);
+  Serial.println (" device(s).");
+}

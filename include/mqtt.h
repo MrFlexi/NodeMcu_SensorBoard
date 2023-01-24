@@ -12,5 +12,6 @@ void callback(char *topic, byte *payload, unsigned int length);
 void reconnect();
 void mqtt_send();
 void setup_mqtt();
+int i2c_scan();
 
 #endif
