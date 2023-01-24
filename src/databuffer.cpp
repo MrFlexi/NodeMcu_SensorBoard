@@ -107,6 +107,9 @@ String DataBuffer::to_json()
  
   JsonObject measurement = doc.createNestedObject("measurement");
 
+  measurement["ntc_temp1"] = data.ntc_temp1;
+ 
+
   // Battery Management
   // measurement["bat_voltage"] = data.bat_voltage;
   // measurement["bat_charge_current"] = data.bat_charge_current;    
@@ -134,12 +137,6 @@ String DataBuffer::to_json()
   measurement["hcsr04_distance"] = data.hcsr04_distance;
 #endif
 
-
-
-  // Add the "location"
-  // JsonObject location = doc.createNestedObject("location");
-  // location["lat"] = data.gps.lat();
-  // location["lon"] = data.gps.lng();
 
   serializeJson(doc, JsonStr);
   return JsonStr;

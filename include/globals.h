@@ -1,12 +1,6 @@
 
 #pragma once
-
 #include <Arduino.h>
-#include "databuffer.h"
-
-#define WDT_TIMEOUT 10           // Watchdog time out x seconds
-#define uS_TO_S_FACTOR 1000000UL //* Conversion factor for micro seconds to seconds */
-#define SEALEVELPRESSURE_HPA (1013.25)
 
 //--------------------------------------------------------------------------
 // GPIO
@@ -18,10 +12,19 @@
 //--------------------------------------------------------------------------
 // Device Settings
 //--------------------------------------------------------------------------
+#define WDT_TIMEOUT 10           // Watchdog time out x seconds
+#define uS_TO_S_FACTOR 1000000UL //* Conversion factor for micro seconds to seconds */
+#define SEALEVELPRESSURE_HPA (1013.25)
 
-// Define Applications
+
 #define DEVICE_NAME  "nodemcu-01"
 #define USE_MQTT 1
+#define USE_NTC  1
+
+//--------------------------------------------------------------------------
+//Include custon libraries
+//--------------------------------------------------------------------------
+#include "databuffer.h"
 
 #if (USE_WEBSERVER || USE_CAYENNE || USE_MQTT || USE_WIFI)
 #include <ESP8266WiFi.h>
