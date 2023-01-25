@@ -7,47 +7,49 @@
 #include "globals.h"
 #include "databuffer.h"
 
-#define HAS_DISPLAY U8G2_SSD1306_128X64_NONAME_F_HW_I2C 
+#include <OneBitDisplay.h>
+extern ONE_BIT_DISPLAY *dp;
 
-#define SUN	0
-#define SUN_CLOUD  1
-#define CLOUD 2
-#define RAIN 3
-#define THUNDER 4
-#define SLEEP 10
-#define ICON_NOTES 11
-#define ICON_SMILE 12
-#define ICON_BOOT  13
+// if your system doesn't have enough RAM for a back buffer, comment out
+// this line (e.g. ATtiny85)
+#define USE_BACKBUFFER
 
-#define PAGE_TBEAM 0
-#define PAGE_SENSORS 1
-#define PAGE_NTC 2
+static uint8_t ucBackBuffer[1024];
 
-#define PAGE_SLEEP 20         // Pages > 20 are not in the picture loop
-#define PAGE_BOOT 21
 
-// assume 4x6 font, define width and height
-#define U8LOG_WIDTH 32
-#define U8LOG_HEIGHT 6
+// Use -1 for the Wire library default pins
+// or specify the pin numbers to use with the Wire library or bit banging on any GPIO pins
+// These are the pin numbers for the M5Stack Atom Grove port I2C (reversed SDA/SCL for straight through wiring)
+#define SDA_PIN -1
+#define SCL_PIN -1
+//#define SDA_PIN 32
+//#define SCL_PIN 26
+// Set this to -1 to disable or the GPIO pin number connected to the reset
+// line of your display if it requires an external reset
+#define RESET_PIN -1
+// let OneBitDisplay figure out the display address
+#define OLED_ADDR -1
+// don't rotate the display
+#define FLIP180 0
+// don't invert the display
+#define INVERT 0
+// Bit-Bang the I2C bus
+#define USE_HW_I2C 1
 
-#include <U8g2lib.h>
+// Change these if you're using a different OLED display
+#define MY_OLED OLED_128x64
+#define OLED_WIDTH 128
+#define OLED_HEIGHT 64
+#define OLED_FREQUENCY 400000L
 
-extern HAS_DISPLAY u8g2;             // 
-extern U8G2LOG u8g2log;             // Create a U8g2log object
-extern int PageNumber; 
+#define MY_DISPLAY_FGCOLOR 1 // OLED_WHITE
+#define MY_DISPLAY_BGCOLOR 0 // OLED_BLACK
 
-// allocate memory
-extern uint8_t u8log_buffer[U8LOG_WIDTH * U8LOG_HEIGHT];
+//#define MY_OLED OLED_64x32
+//#define OLED_WIDTH 64
+//#define OLED_HEIGHT 32
 
-void log_display(String s);
-void setup_display(void);
-void t_moveDisplayRTOS(void *pvParameters);
-void t_moveDisplay(void);
 
-void setup_display_new();
-void dp_printf(uint16_t x, uint16_t y, uint8_t font, uint8_t inv,
-               const char *format, ...);
 
-void showPage(int page);
-void drawSymbol(u8g2_uint_t x, u8g2_uint_t y, uint8_t symbol);
 
+void setup_display();

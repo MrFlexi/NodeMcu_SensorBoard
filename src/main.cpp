@@ -125,8 +125,7 @@ void setup()
   setup_ticker();
 
 #if (USE_DISPLAY)
-  setup_display();
-  showPage(PAGE_BOOT);
+  setup_display();  
 #endif
 }
 
