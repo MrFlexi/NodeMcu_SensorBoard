@@ -14,7 +14,7 @@ typedef struct
   float humidity;           // humidity signal
   float pressure;           // pressure signal
   float cpu_temperature;    // raw temperature signal
-  float ntc_temp1;    // raw temperature signal
+  double ntc_temp1;         // raw temperature signal
   float raw_temperature;    // raw temperature signal
   float raw_humidity;       // raw humidity signal
   uint8_t aliveCounter;     // aliveCounter

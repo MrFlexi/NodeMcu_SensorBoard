@@ -10,31 +10,46 @@
 #include <SmoothThermistor.h>
 
 #define SENSOR_PIN A0
-#define REFERENCE_RESISTANCE 10000 // 10K  NTC
-#define NOMINAL_RESISTANCE 100000  // 100k Widerstand Spannungsteiler
+#define REFERENCE_RESISTANCE 100000  // 100k Widerstand Spannungsteiler
+#define NOMINAL_RESISTANCE    10000  // 10K  NTC 
 #define NOMINAL_TEMPERATURE 25
 #define B_VALUE 3950
-#define SMOOTHING_FACTOR 10
+#define SMOOTHING_FACTOR 5
 
 #define LED D1 // Led in NodeMCU at pin D1
 #define USE_DISPLAY 1
 
-unsigned long lastMsg;
-uint8_t cyclic_cnt = 0;
+#define DEEP_SLEEP_MINUTES 2
 
+unsigned long lastMsg;
+uint8_t cyclic1m_cnt = 0;
+
+Ticker cyclic1s;
 Ticker cyclic10s;
 Ticker cyclic1m;
 
 WiFiClient wifiClient;
 Thermistor *thermistor = NULL;
 
-void t_cyclic10s() // Ticker called every 10 seconds
+void startDeepSleepMinutes(uint32_t value)
+{
+  uint64_t s_time_us = value * uS_TO_S_FACTOR * 60;
+  ESP.deepSleep(s_time_us);
+}
+
+void t_cyclic1s() // Ticker called every 10 seconds
 {
   // Get temperature
   const double celsius = thermistor->readCelsius();
   dataBuffer.data.ntc_temp1 = celsius;
-  Serial.print("Temperature: ");
-  Serial.print(celsius);
+  Serial.print("Temp: ");
+  Serial.println(dataBuffer.data.ntc_temp1);
+}
+
+void t_cyclic10s() // Ticker called every 10 seconds
+{
+
+  dislay_update();
 }
 
 void t_cyclic1m() // Ticker called every 1 minute
@@ -42,11 +57,20 @@ void t_cyclic1m() // Ticker called every 1 minute
   // Send data via MQTT
   Serial.print("Mqtt send");
   mqtt_send();
+
+      cyclic1m_cnt++;
+    if (cyclic1m_cnt > 5)
+    {
+      Serial.print("going to sleep for 2 minutes");
+      dislay_sleep();
+      startDeepSleepMinutes(dataBuffer.settings.sleep_time);
+    }
 }
 
 void setup_ticker()
 {
   // Initialize Tickers
+  cyclic1s.attach(1, t_cyclic1s); // Use attach_ms if you need time in
   cyclic10s.attach(10, t_cyclic10s); // Use attach_ms if you need time in
   cyclic1m.attach(60, t_cyclic1m);   // Use attach_ms if you need time in
 }
@@ -63,11 +87,7 @@ void setup_ntc()
   thermistor = new SmoothThermistor(originThermistor, SMOOTHING_FACTOR);
 }
 
-void startDeepSleepMinutes(uint32_t value)
-{
-  uint64_t s_time_us = value * uS_TO_S_FACTOR * 60;
-  ESP.deepSleep(s_time_us);
-}
+
 
 void setup_wifi()
 {
@@ -85,48 +105,28 @@ void setup_wifi()
   }
 
   randomSeed(micros());
-
   Serial.println("");
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 }
 
-void led_blink_short()
-{
-  digitalWrite(LED, HIGH);
-  delay(100);
-  digitalWrite(LED, LOW);
-  delay(100);
-  digitalWrite(LED, HIGH);
-  delay(100);
-  digitalWrite(LED, LOW);
-}
-
-void led_blink_long()
-{
-  digitalWrite(LED, HIGH);
-  delay(200);
-  digitalWrite(LED, LOW);
-  delay(200);
-  digitalWrite(LED, HIGH);
-  delay(200);
-  digitalWrite(LED, LOW);
-}
-
 void setup()
 {
   Serial.begin(115200);
+  #if (USE_DISPLAY)
+  setup_display();
+  display_boot();
+#endif
+  dataBuffer.settings.sleep_time = DEEP_SLEEP_MINUTES;
   pinMode(LED, OUTPUT); // LED pin as output.
   setup_wifi();
   setup_mqtt();
   setup_ntc();
-  led_blink_short();
+
   setup_ticker();
 
-#if (USE_DISPLAY)
-  setup_display();  
-#endif
+
 }
 
 void loop()
@@ -134,15 +134,7 @@ void loop()
   unsigned long now = millis();
   if (now - lastMsg > 10000)
   {
-    cyclic_cnt++;
-    lastMsg = now;
-    led_blink_short();
-    if (cyclic_cnt > 4)
-    {
-      Serial.print("going to sleep for 2 minutes");
-      led_blink_long();
-      startDeepSleepMinutes(2);
-    }
+
   }
   mqtt_loop();
 }

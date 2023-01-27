@@ -53,3 +53,6 @@ static uint8_t ucBackBuffer[1024];
 
 
 void setup_display();
+void display_boot();
+void dislay_update();
+void dislay_sleep();
