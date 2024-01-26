@@ -119,9 +119,16 @@ void setup()
   Serial.begin(115200);
   delay(1000);
   i2c_scan();
+  Wire.setClock(400000);
   #if (HAS_INA3221 || HAS_INA219 || USE_BME280)
   Serial.print("-----------  Setup I2c devices   -----------");
   setup_i2c_sensors();
+  #endif
+
+  #if (USE_DISPLAY)
+  setup_display();
+  showPage(PAGE_BOOT);
+  delay(1000);
   #endif
  
   setup_wifi();
@@ -130,10 +137,7 @@ void setup()
   led_blink_short();
   setup_ticker();
 
-#if (USE_DISPLAY)
-  setup_display();
-  showPage(PAGE_NTC);
-#endif
+
 }
 
 void loop()
@@ -143,7 +147,6 @@ void loop()
   {
     cyclic_cnt++;
     lastMsg = now;
-    led_blink_short();
     if (cyclic_cnt > 10)
     {
       Serial.print("going to sleep for 2 minutes");
