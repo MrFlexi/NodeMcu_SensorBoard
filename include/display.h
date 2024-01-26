@@ -8,6 +8,7 @@
 #include "databuffer.h"
 
 #define HAS_DISPLAY U8G2_SSD1306_128X64_NONAME_F_HW_I2C 
+//#define HAS_DISPLAY U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C
 
 #define SUN	0
 #define SUN_CLOUD  1

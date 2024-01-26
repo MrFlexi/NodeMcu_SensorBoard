@@ -17,13 +17,14 @@ void DataBuffer::get()
 
 String DataBuffer::to_json_web()
 {
-  const int capacity = JSON_OBJECT_SIZE(100) + JSON_OBJECT_SIZE(2);
-  StaticJsonDocument<capacity> doc;
+  //const int capacity = JSON_OBJECT_SIZE(100) + JSON_OBJECT_SIZE(2);
+  JsonDocument doc;
   String JsonStr;
   char s[20];
 
   doc.clear();
   JsonArray sensors = doc.createNestedArray("sensors");
+
 
   JsonObject sensors_1 = sensors.createNestedObject();
   sensors_1["name"] = "Battery";
@@ -95,17 +96,15 @@ JsonObject sensors_8 = sensors.createNestedObject();
 String DataBuffer::to_json()
 {
   // Json format suitable for direct input to INFLUX DB
-
-  const int capacity = JSON_OBJECT_SIZE(100) + JSON_OBJECT_SIZE(2);
-  StaticJsonDocument<capacity> doc;
+  JsonDocument doc;
   String JsonStr;
 
   doc.clear();
-
-  JsonObject tags = doc.createNestedObject("tags");
+  //JsonObject tags = doc.createNestedObject("tags");
+  JsonObject tags = doc["data"].to<JsonObject>();
   tags["device"] = "NodeMCU-01";
  
-  JsonObject measurement = doc.createNestedObject("measurement");
+  JsonObject measurement = doc["measurement"].to<JsonObject>();
 
   measurement["ntc_temp1"] = data.ntc_temp1;
  

@@ -21,6 +21,7 @@
 #define DEVICE_NAME  "nodemcu-01"
 #define USE_MQTT 1
 #define USE_NTC  1
+#define USE_BME280 1
 
 //--------------------------------------------------------------------------
 //Include custon libraries

@@ -9,11 +9,12 @@ PubSubClient MqttClient(wifiClient);
 
 //const char *mqtt_server = "192.168.1.100"; // Raspberry
 const char *mqtt_server = "85.209.49.65"; // Netcup
+uint16_t    mqtt_port = 41845;
 const char *mqtt_topic = "mrflexi/device/";
 const char *mqtt_topic_mosi = "/mosi";
 const char *mqtt_topic_miso = "/miso";
 const char *mqtt_topic_irq = "/miso/irq";
-const char *mqtt_topic_traincontroll = "/TrainControll/";
+
 
 long lastMsgAlive = 0;
 long lastMsgDist = 0;
@@ -59,7 +60,7 @@ void callback(char *topic, byte *payload, unsigned int length)
   }
 
   // Convert Payload to a JSON object
-  StaticJsonDocument<500> doc;
+  JsonDocument doc;
   deserializeJson(doc, message);
   serializeJsonPretty(doc, Serial);
 
@@ -104,11 +105,11 @@ void reconnect()
   if (WiFi.status() == WL_CONNECTED)
   {
     // Loop until we're reconnected
-    while (!MqttClient.connected())
+    while (!MqttClient.connected() && i < 2 )
     {
      Serial.println("Attempting MQTT connection...");
       // Attempt to connect
-      if (MqttClient.connect(DEVICE_NAME))
+      if (MqttClient.connect(DEVICE_NAME, "drumol", "nc:13Arequipa"))
       {
         
         MqttClient.publish(mqtt_topic, "connected");
@@ -135,7 +136,7 @@ void setup_mqtt()
 {
   if (WiFi.status() == WL_CONNECTED)
   {
-    MqttClient.setServer(mqtt_server, 1883);
+    MqttClient.setServer(mqtt_server, mqtt_port);
     MqttClient.setCallback(callback);
     MqttClient.setBufferSize(500);
     MqttClient.setSocketTimeout(120);
@@ -184,7 +185,7 @@ void mqtt_send()
 #define IP5306_ADDR (0X75)
 
 
-int i2c_scan(void) {
+void i2c_scan(void) {
 
     Serial.println ();
   Serial.println ("I2C scanner. Scanning ...");
@@ -197,15 +198,14 @@ int i2c_scan(void) {
     if (Wire.endTransmission () == 0)
       {
       Serial.print ("Found address: ");
-      Serial.print (i, DEC);
-      Serial.print (" (0x");
+      Serial.print (" 0x");
       Serial.print (i, HEX);
-      Serial.println (")");
+      Serial.println ();
       count++;
-      delay (1);  // maybe unneeded?
+      delay (2);  // maybe unneeded?
       }
   }
   Serial.print ("Found ");
   Serial.print (count, DEC);
-  Serial.println (" device(s).");
+  Serial.println (" I2C device(s).");
 }
