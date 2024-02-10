@@ -101,7 +101,7 @@ String DataBuffer::to_json()
 
   doc.clear();
   //JsonObject tags = doc.createNestedObject("tags");
-  JsonObject tags = doc["data"].to<JsonObject>();
+  JsonObject tags = doc["tags"].to<JsonObject>();
   tags["device"] = "NodeMCU-01";
  
   JsonObject measurement = doc["measurement"].to<JsonObject>();
@@ -138,6 +138,7 @@ String DataBuffer::to_json()
 
 
   serializeJson(doc, JsonStr);
+  //Serial.println(JsonStr);
   return JsonStr;
 }
 

@@ -8,7 +8,6 @@
 #include "databuffer.h"
 
 #define HAS_DISPLAY U8G2_SSD1306_128X64_NONAME_F_HW_I2C 
-//#define HAS_DISPLAY U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C
 
 #define SUN	0
 #define SUN_CLOUD  1
@@ -20,9 +19,10 @@
 #define ICON_SMILE 12
 #define ICON_BOOT  13
 
-#define PAGE_TBEAM 0
-#define PAGE_SENSORS 1
-#define PAGE_NTC 2
+#define PAGE_SYSTEM 0
+#define PAGE_SOILSENSOR 1
+#define PAGE_BME280 2
+#define PAGE_NTC 3
 
 #define PAGE_SLEEP 20         // Pages > 20 are not in the picture loop
 #define PAGE_BOOT 21

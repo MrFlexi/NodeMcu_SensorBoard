@@ -7,8 +7,8 @@ static const char TAG[] = __FILE__;
 //-------------------------------------------------------------------------------
 // 128*64 Pixel --> Center = 64*32
 //-------------------------------------------------------------------------------
-HAS_DISPLAY u8g2(U8G2_R0, /* reset=*/U8X8_PIN_NONE, /* clock=*/SCL, /* data=*/SDA); // ESP32 Thing, HW I2C with pin remapping
-
+HAS_DISPLAY u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE, /* clock=*/ SCL, /* data=*/ SDA );
+ 
 U8G2LOG u8g2log;
 uint8_t u8log_buffer[U8LOG_WIDTH * U8LOG_HEIGHT];
 int PageNumber = 0;
@@ -22,14 +22,14 @@ void displayRegisterPages()
 {
 
   max_page_counter = 0;
-  page_array[max_page_counter] = PAGE_TBEAM;
+  page_array[max_page_counter] = PAGE_SOILSENSOR;
 
   max_page_counter++;
   page_array[max_page_counter] = PAGE_NTC;
 
 #if (USE_BME280)
   max_page_counter++;
-  page_array[max_page_counter] = PAGE_SENSORS;
+  page_array[max_page_counter] = PAGE_BME280;
 #endif
 
 
@@ -42,12 +42,10 @@ void setup_display(void)
   u8g2.begin();
   u8g2.setFont(u8g2_font_profont11_mf); // set the font for the terminal window
   u8g2.setContrast(255);
-  u8g2log.begin(u8g2, U8LOG_WIDTH, U8LOG_HEIGHT, u8log_buffer); // connect to u8g2, assign buffer
-  u8g2log.setLineHeightOffset(0);                               // set extra space between lines in pixel, this can be negative
-  u8g2log.setRedrawMode(0);                                     // 0: Update screen with newline, 1: Update screen for every char
-  u8g2.enableUTF8Print();
-
-  u8g2log.print("millis=");
+  //u8g2log.begin(u8g2, U8LOG_WIDTH, U8LOG_HEIGHT, u8log_buffer); // connect to u8g2, assign buffer
+  //u8g2log.setLineHeightOffset(0);                               // set extra space between lines in pixel, this can be negative
+  //u8g2log.setRedrawMode(0);                                     // 0: Update screen with newline, 1: Update screen for every char
+  //u8g2.enableUTF8Print();
 
   displayRegisterPages();
 }
@@ -108,7 +106,7 @@ void showPage(int page)
   u8g2.clearBuffer();
   u8g2.clearDisplay();
   
-  Serial.println("Display page");
+  Serial.print("Display page: "); Serial.println(page);
 
   switch (page)
   {
@@ -116,13 +114,13 @@ void showPage(int page)
   case PAGE_BOOT:
     // drawSymbol(30, 40, SUN);
     // drawSymbol(30, 40, ICON_SMILE);
-    drawSymbol(48, 32, ICON_BOOT); // place in the center of display
+    drawSymbol(48, 64, SUN) ; // place in the center of display
 
     u8g2.setFont(u8g2_font_ncenB12_tr);
     u8g2.drawStr(1, 15, "booting...");
     break;
 
-  case PAGE_TBEAM:
+  case PAGE_SYSTEM:
     u8g2.setFont(u8g2_font_profont12_tr);
     u8g2.setCursor(1, 15);
     u8g2.setCursor(1, 45);
@@ -132,36 +130,46 @@ void showPage(int page)
     u8g2.printf("BootCnt: %2d ", dataBuffer.data.bootCounter);
     break;
 
+    case PAGE_SOILSENSOR:
+    u8g2.setFont(u8g2_font_courB12_tr);
+    u8g2.drawStr(1, 17, "Soilsensor");
+    u8g2.setCursor(1, 35);
+    u8g2.printf("Moist: %.1f  ", dataBuffer.data.soil_moisture );
+    
+    break;
+
   case PAGE_NTC:
     u8g2.setFont(u8g2_font_ncenB12_tr);
     u8g2.drawStr(1, 15, "NTC Sensors");
     u8g2.setFont(u8g2_font_profont12_tr);
     u8g2.setCursor(1, 30);
-    u8g2.printf("Temp1: %.2fC ", dataBuffer.data.ntc_temp1 );
+    u8g2.printf("Temp: %.1fC ", dataBuffer.data.ntc_temp1 );
     
     break;
 
-   case PAGE_SENSORS:
-    u8g2.setFont(u8g2_font_ncenB12_tr);
-    u8g2.drawStr(1, 15, "BME 280");
-    u8g2.setFont(u8g2_font_profont12_tr);
-    u8g2.setCursor(1, 30);
-    u8g2.printf("Temp1: %.2fC ", dataBuffer.data.temperature, dataBuffer.data.humidity);
-    u8g2.setCursor(1, 45);
-    u8g2.printf("CPU Temp: %.2f C ", dataBuffer.data.cpu_temperature);
-    u8g2.setCursor(1, 60);
+   case PAGE_BME280:
+    u8g2.setFont(u8g2_font_courB14_tr);
+    u8g2.setCursor(1, 17);
+    u8g2.printf("Temp %.1f C", dataBuffer.data.temperature);
+    u8g2.setCursor(1, 35);
+    u8g2.printf("Hum  %.1f%%",  dataBuffer.data.humidity);
+    u8g2.setCursor(1, 52);
+    u8g2.printf("DewP %.1f C",  dataBuffer.data.dewPoint);
     break;
 
   case PAGE_SLEEP:
-    u8g2.setFont(u8g2_font_ncenB12_tr);
-    u8g2.drawStr(1, 15, "Sleep");
+    u8g2.setFont(u8g2_font_courB14_tr);
+    u8g2.setCursor(1, 17);
+    u8g2.printf("Temp %.1f C", dataBuffer.data.temperature);
+    u8g2.setCursor(1, 35);
+    u8g2.printf("Hum  %.1f%%",  dataBuffer.data.humidity);
     u8g2.setFont(u8g2_font_profont12_tr);
     u8g2.setCursor(1, 64);
-    u8g2.printf("Sleeping for %i min", dataBuffer.settings.sleep_time);
-    drawSymbol(60, 12, THUNDER);
-
+    u8g2.printf("sleeping for %i min", dataBuffer.settings.sleep_time);
     break;
   }
+
+  u8g2.sendBuffer();
 }
 
 void t_moveDisplay(void)
@@ -169,7 +177,7 @@ void t_moveDisplay(void)
   if (page_counter < max_page_counter)
   {
     page_counter++;
-    // Serial.println("P counter: %d", page_counter);
+    //Serial.println("P counter: %d", page_counter);
   }
   else
   {

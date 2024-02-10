@@ -54,7 +54,7 @@ void callback(char *topic, byte *payload, unsigned int length)
 
   //Serial.println("MQTT message topic %s", topic);
 
-  for (int i = 0; i < length; i++)
+  for (uint8 i = 0; i < length; i++)
   {
     message += (char)payload[i];
   }
@@ -161,7 +161,6 @@ void mqtt_send()
   if (MqttClient.connected())
   {
     Serial.println("MQTT send: "); Serial.println(topic_out);
-    //Serial.println("Payload: %s", dataBuffer.to_json().c_str());
     MqttClient.publish(topic_out, dataBuffer.to_json().c_str());
   }
   else

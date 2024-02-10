@@ -13,6 +13,7 @@ typedef struct
   float temperature;        // temperature signal
   float humidity;           // humidity signal
   float pressure;           // pressure signal
+  float dewPoint;           // humidity signal
   float cpu_temperature;    // raw temperature signal
   float ntc_temp1;    // raw temperature signal
   float raw_temperature;    // raw temperature signal
