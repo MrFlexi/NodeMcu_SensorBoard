@@ -34,10 +34,12 @@ Ticker cyclic1m;
 WiFiClient wifiClient;
 Thermistor *thermistor = NULL;
 
+
+
 // ---------------------------- MPU 6050 -------------------------------
 #define OUTPUT_READABLE_YAWPITCHROLL
-#define INTERRUPT_PIN D7  // use pin 2 on Arduino Uno & most boards
-#define LED_PIN 13 // (Arduino is 13, Teensy is 11, Teensy++ is 6)
+#define INTERRUPT_PIN D7 // use pin 2 on Arduino Uno & most boards
+#define LED_PIN 13       // (Arduino is 13, Teensy is 11, Teensy++ is 6)
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps612.h"
 MPU6050 mpu;
@@ -53,32 +55,31 @@ uint16_t fifoCount;     // count of all bytes currently in FIFO
 uint8_t fifoBuffer[64]; // FIFO storage buffer
 
 // orientation/motion vars
-Quaternion q;           // [w, x, y, z]         quaternion container
-VectorInt16 aa;         // [x, y, z]            accel sensor measurements
-VectorInt16 gy;         // [x, y, z]            gyro sensor measurements
-VectorInt16 aaReal;     // [x, y, z]            gravity-free accel sensor measurements
-VectorInt16 aaWorld;    // [x, y, z]            world-frame accel sensor measurements
-VectorFloat gravity;    // [x, y, z]            gravity vector
-float euler[3];         // [psi, theta, phi]    Euler angle container
-float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
+Quaternion quat;        // [w, x, y, z]         quaternion container
+VectorInt16 aa;      // [x, y, z]            accel sensor measurements
+VectorInt16 gy;      // [x, y, z]            gyro sensor measurements
+VectorInt16 aaReal;  // [x, y, z]            gravity-free accel sensor measurements
+VectorInt16 aaWorld; // [x, y, z]            world-frame accel sensor measurements
+VectorFloat gravity; // [x, y, z]            gravity vector
+float euler[3];      // [psi, theta, phi]    Euler angle container
+float ypr[3];        // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 
 // packet structure for InvenSense teapot demo
-uint8_t teapotPacket[14] = { '$', 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0x00, 0x00, '\r', '\n' };
-
+uint8_t teapotPacket[14] = {'$', 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0x00, 0x00, '\r', '\n'};
 
 // ================================================================
 // ===               INTERRUPT DETECTION ROUTINE                ===
 // ================================================================
 
-volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
-IRAM_ATTR void dmpDataReady() {
+volatile bool mpuInterrupt = false; // indicates whether MPU interrupt pin has gone high
+IRAM_ATTR void dmpDataReady()
+{
   mpuInterrupt = true;
 }
 
-
 void getSensorValues()
 {
-// Get NTC temperature
+  // Get NTC temperature
   const double celsius = thermistor->readCelsius();
   dataBuffer.data.ntc_temp1 = celsius;
   Serial.print("NTC Temperature: ");
@@ -95,11 +96,11 @@ void getSensorValues()
 
   float hum = bme.readHumidity();
 
-  float dewPoint = 243.04 * (log(hum/100.0) + ((17.625 * temp)/(243.04 + temp)))
-       /(17.625 - log(hum/100.0) - ((17.625 * temp)/(243.04 + temp)));
+  float dewPoint = 243.04 * (log(hum / 100.0) + ((17.625 * temp) / (243.04 + temp))) / (17.625 - log(hum / 100.0) - ((17.625 * temp) / (243.04 + temp)));
 
-   Serial.print("Dew Point"); Serial.println(dewPoint);
-   dataBuffer.data.dewPoint = dewPoint;
+  Serial.print("Dew Point");
+  Serial.println(dewPoint);
+  dataBuffer.data.dewPoint = dewPoint;
 
 #endif
 
@@ -113,7 +114,7 @@ void getSensorValues()
 
 void t_cyclic10s() // Ticker called every 10 seconds
 {
-  
+
   getSensorValues();
   t_moveDisplay();
 }
@@ -195,7 +196,6 @@ void led_blink_long()
   digitalWrite(LED, LOW);
 }
 
-
 void setup_mpu()
 {
   // initialize device
@@ -208,10 +208,10 @@ void setup_mpu()
   Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
 
   // wait for ready
- // Serial.println(F("\nSend any character to begin DMP programming and demo: "));
- // while (Serial.available() && Serial.read()); // empty buffer
- // while (!Serial.available());                 // wait for data
- // while (Serial.available() && Serial.read()); // empty buffer again
+  // Serial.println(F("\nSend any character to begin DMP programming and demo: "));
+  // while (Serial.available() && Serial.read()); // empty buffer
+  // while (!Serial.available());                 // wait for data
+  // while (Serial.available() && Serial.read()); // empty buffer again
 
   // load and configure the DMP
   Serial.println(F("Initializing DMP..."));
@@ -225,7 +225,8 @@ void setup_mpu()
   mpu.setYAccelOffset(-50);
   mpu.setZAccelOffset(1060);
   // make sure it worked (returns 0 if so)
-  if (devStatus == 0) {
+  if (devStatus == 0)
+  {
     // Calibration Time: generate offsets and calibrate our MPU6050
     mpu.CalibrateAccel(6);
     mpu.CalibrateGyro(6);
@@ -245,11 +246,14 @@ void setup_mpu()
     // set our DMP Ready flag so the main loop() function knows it's okay to use it
     Serial.println(F("DMP ready! Waiting for first interrupt..."));
     dmpReady = true;
-    Serial.print("MPU Temp:"); Serial.println(mpu.getTemperature());
+    Serial.print("MPU Temp:");
+    Serial.println(mpu.getTemperature());
 
     // get expected DMP packet size for later comparison
     packetSize = mpu.dmpGetFIFOPacketSize();
-  } else {
+  }
+  else
+  {
     // ERROR!
     // 1 = initial memory load failed
     // 2 = DMP configuration updates failed
@@ -258,14 +262,16 @@ void setup_mpu()
     Serial.print(devStatus);
     Serial.println(F(")"));
   }
- 
 }
 
-void loop_mpu() {
+void loop_mpu()
+{
   // if programming failed, don't try to do anything
-  if (!dmpReady) return;
+  if (!dmpReady)
+    return;
   // read a packet from FIFO
-  if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) { // Get the Latest packet 
+  if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer))
+  { // Get the Latest packet
 
 #ifdef OUTPUT_READABLE_QUATERNION
     // display quaternion values in easy matrix form: w x y z
@@ -294,15 +300,20 @@ void loop_mpu() {
 
 #ifdef OUTPUT_READABLE_YAWPITCHROLL
     // display Euler angles in degrees
-    mpu.dmpGetQuaternion(&q, fifoBuffer);
-    mpu.dmpGetGravity(&gravity, &q);
-    mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+    mpu.dmpGetQuaternion(&quat, fifoBuffer);
+    mpu.dmpGetGravity(&gravity, &quat);
+    mpu.dmpGetYawPitchRoll(ypr, &quat, &gravity);
     Serial.print("ypr\t");
     Serial.print(ypr[0] * 180 / M_PI);
     Serial.print("\t");
     Serial.print(ypr[1] * 180 / M_PI);
     Serial.print("\t");
-    Serial.print(ypr[2] * 180 / M_PI);
+   
+    float deg_r =  ypr[2] * 180 / M_PI;
+    Serial.print(deg_r);
+     Serial.println();
+
+    LED_showDegree(deg_r);
     /*
       mpu.dmpGetAccel(&aa, fifoBuffer);
       Serial.print("\tRaw Accl XYZ\t");
@@ -319,7 +330,7 @@ void loop_mpu() {
       Serial.print("\t");
       Serial.print(gy.z);
     */
-    Serial.println();
+   
 
 #endif
 
@@ -369,16 +380,19 @@ void loop_mpu() {
 
     // blink LED to indicate activity
     blinkState = !blinkState;
-    //digitalWrite(LED_PIN, blinkState);
+    // digitalWrite(LED_PIN, blinkState);
   }
 }
-
 
 void setup()
 {
   Serial.begin(115200);
   i2c_scan();
   Wire.setClock(400000);
+#if (USE_FASTLED)
+  setup_FastLed();
+#endif
+
 #if (HAS_INA3221 || HAS_INA219 || USE_BME280)
   Serial.print("-----------  Setup I2c devices   -----------");
   setup_i2c_sensors();
@@ -411,9 +425,9 @@ void loop()
       Serial.print("going to sleep for 2 minutes");
       dataBuffer.settings.sleep_time = 2;
 
-       #if (USE_DISPLAY)
-        showPage(PAGE_SLEEP);
-       #endif
+#if (USE_DISPLAY)
+      showPage(PAGE_SLEEP);
+#endif
 
       startDeepSleepMinutes(2);
     }

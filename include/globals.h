@@ -23,6 +23,7 @@
 #define USE_NTC  1
 #define USE_BME280 1
 #define USE_SOILSENSOR 1
+#define USE_FASTLED 1
 //--------------------------------------------------------------------------
 //Include custon libraries
 //--------------------------------------------------------------------------
@@ -64,4 +65,8 @@ const char wifiPassword[] = "Linde-123";
 
 #if (USE_PWM_SERVO)
 #include "servo.h"
+#endif
+
+#if (USE_FASTLED)
+#include <Led.h>
 #endif
