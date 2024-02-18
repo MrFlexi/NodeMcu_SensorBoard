@@ -86,7 +86,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     
     uint8_t servo_number = atoi(number);
     uint8_t servo_position = atoi(position);
-    Serial.println("MQTT: move servo &d to %3d degree", servo_number , servo_position);
+    //Serial.println("MQTT: move servo &d to %3d degree", servo_number , servo_position);
   }  
 #endif
 

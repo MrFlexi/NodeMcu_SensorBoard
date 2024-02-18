@@ -24,6 +24,7 @@
 #define USE_BME280 1
 #define USE_SOILSENSOR 1
 #define USE_FASTLED 1
+#define USE_PWM_SERVO 1
 //--------------------------------------------------------------------------
 //Include custon libraries
 //--------------------------------------------------------------------------

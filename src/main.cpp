@@ -35,6 +35,11 @@ WiFiClient wifiClient;
 Thermistor *thermistor = NULL;
 
 
+// --------------------- Laser distance sensor -------------------------------
+#include <VL53L1X.h>
+VL53L1X sensor;
+
+
 
 // ---------------------------- MPU 6050 -------------------------------
 #define OUTPUT_READABLE_YAWPITCHROLL
@@ -310,10 +315,12 @@ void loop_mpu()
     Serial.print("\t");
    
     float deg_r =  ypr[2] * 180 / M_PI;
+    float deg_z =  ypr[0] * 180 / M_PI;
     Serial.print(deg_r);
-     Serial.println();
+    Serial.println();
 
-    LED_showDegree(deg_r);
+    LED_showDegree(deg_z);
+    servo_move_to(0,deg_z);
     /*
       mpu.dmpGetAccel(&aa, fifoBuffer);
       Serial.print("\tRaw Accl XYZ\t");
@@ -384,6 +391,28 @@ void loop_mpu()
   }
 }
 
+void setup_VL53L1X()
+{
+  sensor.setTimeout(500);
+  if (!sensor.init())
+  {
+    Serial.println("Lidar: failed to detect and initialize sensor!");
+  }
+
+  // Use long distance mode and allow up to 50000 us (50 ms) for a measurement.
+  // You can change these settings to adjust the performance of the sensor, but
+  // the minimum timing budget is 20 ms for short distance mode and 33 ms for
+  // medium and long distance modes. See the VL53L1X datasheet for more
+  // information on range and timing limits.
+  sensor.setDistanceMode(VL53L1X::Long);
+  sensor.setMeasurementTimingBudget(50000);
+
+  // Start continuous readings at a rate of one measurement every 50 ms (the
+  // inter-measurement period). This period should be at least as long as the
+  // timing budget.
+  sensor.startContinuous(50);
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -400,6 +429,8 @@ void setup()
   setup_ntc();
   setup_mpu();
 
+  setup_VL53L1X();
+
   getSensorValues();
 
 #if (USE_DISPLAY)
@@ -407,10 +438,32 @@ void setup()
   showPage(PAGE_BME280);
 #endif
 
+#if (USE_PWM_SERVO)
+  setup_servo_pwm();
+  servo_move_to(0,45);
+  servo_move_to(1,90);
+#endif
+
   setup_wifi();
   setup_mqtt();
 
   setup_ticker();
+}
+
+void loop_VL53L1X()
+{
+  sensor.read();
+
+  Serial.print("Lindar distance in mm: ");
+  Serial.print(sensor.ranging_data.range_mm);
+  Serial.print("\tstatus: ");
+  Serial.print(VL53L1X::rangeStatusToString(sensor.ranging_data.range_status));
+  Serial.print("\tpeak signal: ");
+  Serial.print(sensor.ranging_data.peak_signal_count_rate_MCPS);
+  Serial.print("\tambient: ");
+  Serial.print(sensor.ranging_data.ambient_count_rate_MCPS);
+
+  Serial.println();
 }
 
 void loop()
@@ -428,10 +481,11 @@ void loop()
 #if (USE_DISPLAY)
       showPage(PAGE_SLEEP);
 #endif
-
+      LED_sunset();
       startDeepSleepMinutes(2);
     }
   }
   loop_mpu();
+  loop_VL53L1X();
   mqtt_loop();
 }

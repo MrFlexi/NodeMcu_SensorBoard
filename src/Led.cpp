@@ -132,6 +132,8 @@ void LED_sunset()
     FastLED.show();
     delay(10);
   }
+  FastLED.clear();
+
 }
 
 void LED_sunrise()
@@ -149,6 +151,7 @@ void LED_sunrise()
     FastLED.show();
     delay(5);
   }
+  
 }
 
 void LED_on(uint8_t value)
